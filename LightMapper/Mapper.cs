@@ -20,24 +20,28 @@ namespace LightMapper
             Console.WriteLine(destinationType.Name);
             var propertiesInfo = sourceType.GetProperties();
             string ignoreKey = NameCreator.IgnoreKey(typeof(Source), typeof(Destination));
-            string[] ignoreList = MapperCore.IgnoreList[ignoreKey];
-            bool isItemIgnored = false;
+            string[] ignoreList = null;
+            bool isAnyItemIgnored = false;
+            if (MapperCore.IgnoreList!=null)
+            {
+                isAnyItemIgnored = MapperCore.IgnoreList.TryGetValue(ignoreKey, out ignoreList);
+            }
             for (int i = 0; i < propertiesInfo.Length; i++)
             {
-                isItemIgnored = false;
-                if (ignoreList != null && ignoreList.Length > 0)
+              bool  isCurrentItemIgnored = false;
+                if (isAnyItemIgnored && ignoreList != null && ignoreList.Length > 0)
                 {
                     for (int j = 0; j < ignoreList.Length; j++)
                     {
                         if (ignoreList[j] == propertiesInfo[i].Name)
                         {
-                            isItemIgnored = true;
+                            isCurrentItemIgnored = true;
                             break;
                         }
 
                     }
                 }
-                if (isItemIgnored == false)
+                if (isCurrentItemIgnored == false)
                     destination = SetValue<Destination>(destination, propertiesInfo[i].Name, propertiesInfo[i].GetValue(source, null), propertiesInfo[i].PropertyType);
             }
             destination = (Destination)ProfileRunner.Run(source.GetType(), destination.GetType(), source, destination);

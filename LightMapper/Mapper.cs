@@ -9,7 +9,7 @@ namespace LightMapper
     {
         public Mapper()
         {
-            ProfileRunner.RunIgnore();
+            IgnoreRunner.RunIgnore();
         }
         public Destination Map<Source, Destination>(Source source) where Destination : class, new()
         {

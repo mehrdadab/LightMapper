@@ -16,8 +16,6 @@ namespace LightMapper
             var destination = new Destination();
             Type destinationType = destination.GetType();
             Type sourceType = source.GetType();
-            Console.WriteLine(sourceType.Name);
-            Console.WriteLine(destinationType.Name);
             var propertiesInfo = sourceType.GetProperties();
             string ignoreKey = NameCreator.IgnoreKey(typeof(Source), typeof(Destination));
             string[] ignoreList = null;
@@ -62,7 +60,6 @@ namespace LightMapper
 
                     break;
                 }
-                //+ "=>" + propertiesInfo[i].GetValue(dest, null));
             }
             return destination;
         }

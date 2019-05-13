@@ -21,7 +21,11 @@ namespace LightMapper
                 MethodInfo methodInfo = null;
                 try
                 {
-                    methodInfo = item.GetMethods().SingleOrDefault(d => d.GetParameters().Count() == 2 && d.GetParameters()[0].ParameterType == sourceType && d.GetParameters()[1].ParameterType == DestType);
+                    methodInfo = item.GetMethods().SingleOrDefault(d => 
+                    d.GetParameters().Count() == 2 &&
+                    d.GetParameters()[0].ParameterType == sourceType &&
+                    d.GetParameters()[1].ParameterType == DestType && 
+                    !d.IsAbstract);
                 }
                 catch
                 {
@@ -35,6 +39,10 @@ namespace LightMapper
                         throw new Exception("Two functions with the same name is not allowed inside the LightMapper profile classes.");
                     object classInstance = Activator.CreateInstance(item, null);
                     returnedResult = methodInfo.Invoke(classInstance, parameters);
+                }
+                else
+                {
+                    return parameters[1];
                 }
             }
 

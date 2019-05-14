@@ -24,14 +24,12 @@ namespace LightMapper
 
             var propertiesInfo = sourceType.GetProperties();
 
-            GetIgnoreList<Source, Destination>(ref ignoreList, ref isAnyItemIgnored);
+            isAnyItemIgnored = GetIgnoreList(typeof(Source), typeof(Destination),out ignoreList);
 
             for (int i = 0; i < propertiesInfo.Length; i++)
             {
+                bool isCurrentItemIgnored = IsItemIgnored(ignoreList, isAnyItemIgnored, propertiesInfo, i);
 
-                bool isCurrentItemIgnored = false;
-
-                isCurrentItemIgnored = IsItemIgnored(ignoreList, isAnyItemIgnored, propertiesInfo, i, isCurrentItemIgnored);
                 if (isCurrentItemIgnored == false)
                     destination = SetValue<Destination>(destination, propertiesInfo[i].Name, propertiesInfo[i].GetValue(source, null), propertiesInfo[i].PropertyType);
             }
@@ -41,8 +39,10 @@ namespace LightMapper
             return destination;
         }
 
-        private bool IsItemIgnored(string[] ignoreList, bool isAnyItemIgnored, PropertyInfo[] propertiesInfo, int i, bool isCurrentItemIgnored)
+        private bool IsItemIgnored(string[] ignoreList, bool isAnyItemIgnored, PropertyInfo[] propertiesInfo, int i)
         {
+            bool isCurrentItemIgnored = false;
+
             if (isAnyItemIgnored && ignoreList != null && ignoreList.Length > 0)
             {
                 for (int j = 0; j < ignoreList.Length; j++)
@@ -59,14 +59,18 @@ namespace LightMapper
             return isCurrentItemIgnored;
         }
 
-        private void GetIgnoreList<Source, Destination>(ref string[] ignoreList, ref bool isAnyItemIgnored) where Destination : class, new()
+        private bool GetIgnoreList(Type sourceType,Type destinationType,out string[] ignoreList) 
         {
-            string ignoreKey = NameCreator.CacheKey(typeof(Source), typeof(Destination));
+            ignoreList = null;
+            bool isAnyItemIgnored = false;
+
+            string ignoreKey = NameCreator.CacheKey(sourceType,destinationType);
 
             if (MapperCore.IgnoreList != null)
             {
                 isAnyItemIgnored = MapperCore.IgnoreList.TryGetValue(ignoreKey, out ignoreList);
             }
+            return isAnyItemIgnored;
         }
 
         private Destination SetValue<Destination>(Destination destination, string propertyName, object valueToBeSet, Type sourceType)

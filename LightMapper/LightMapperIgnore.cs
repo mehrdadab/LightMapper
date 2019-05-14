@@ -9,7 +9,7 @@ namespace LightMapper
         public abstract void RegisterIgnore();
         public void RegisterMappingIgnore<Source,Destination>(params string[] propertiesToIgnore)
         {
-             string key = NameCreator.IgnoreKey(typeof(Source), typeof(Destination));
+             string key = NameCreator.CacheKey(typeof(Source), typeof(Destination));
             MapperCore.IgnoreList = new System.Collections.Concurrent.ConcurrentDictionary<string, string[]>();
             MapperCore.IgnoreList.TryAdd(key,propertiesToIgnore);
         }

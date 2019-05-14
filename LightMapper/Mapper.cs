@@ -24,7 +24,7 @@ namespace LightMapper
 
             var propertiesInfo = sourceType.GetProperties();
 
-            string ignoreKey = NameCreator.IgnoreKey(typeof(Source), typeof(Destination));
+            string ignoreKey = NameCreator.CacheKey(typeof(Source), typeof(Destination));
 
             if (MapperCore.IgnoreList!=null)
             {
@@ -52,7 +52,7 @@ namespace LightMapper
                     destination = SetValue<Destination>(destination, propertiesInfo[i].Name, propertiesInfo[i].GetValue(source, null), propertiesInfo[i].PropertyType);
             }
 
-            destination = (Destination)ProfileRunner.Run(source.GetType(), destination.GetType(), source, destination);
+          destination = (Destination)ProfileRunner.Run(source.GetType(), destination.GetType(), source, destination);
 
             return destination;
         }

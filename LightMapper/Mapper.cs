@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LightMapper
 {
-    public class Mapper
+    public class Mapper : IMapper
     {
         public Mapper()
         {

@@ -1,7 +1,10 @@
-﻿using System;
+﻿using LightMapper.Models;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Collections;
+using System.Linq;
 
 namespace LightMapper
 {
@@ -15,6 +18,7 @@ namespace LightMapper
         {
             string[] ignoreList = null;
             bool isAnyItemIgnored = false;
+            PropertyInfo destPropertyInfo = null;
 
             var destination = new Destination();
 
@@ -24,18 +28,38 @@ namespace LightMapper
 
             var propertiesInfo = sourceType.GetProperties();
 
-            isAnyItemIgnored = GetIgnoreList(typeof(Source), typeof(Destination),out ignoreList);
-
-            for (int i = 0; i < propertiesInfo.Length; i++)
+            CachedObject[] objectInfoList = ObjectCache.GetObject(sourceType, destinationType);
+            if (objectInfoList == null)
             {
-                bool isCurrentItemIgnored = IsItemIgnored(ignoreList, isAnyItemIgnored, propertiesInfo, i);
+                isAnyItemIgnored = GetIgnoreList(typeof(Source), typeof(Destination),out ignoreList);
 
-                if (isCurrentItemIgnored == false)
-                    destination = SetValue<Destination>(destination, propertiesInfo[i].Name, propertiesInfo[i].GetValue(source, null), propertiesInfo[i].PropertyType);
+                IList<CachedObject> tempObjectList = new List<CachedObject>();
+                for (int i = 0; i < propertiesInfo.Length; i++)
+                {
+                    bool isCurrentItemIgnored = IsItemIgnored(ignoreList, isAnyItemIgnored, propertiesInfo, i);
+
+                    if (isCurrentItemIgnored == false)
+                    {
+                        destination = SetValue<Destination>(destination, propertiesInfo[i].Name, propertiesInfo[i].GetValue(source, null), propertiesInfo[i].PropertyType, out destPropertyInfo);
+
+                        tempObjectList.Add(new CachedObject {SourceObjectInfo=propertiesInfo[i],DestinationObjectInfo=destPropertyInfo });
+
+                    }
+                }
+
+                ObjectCache.SetObject(sourceType, destinationType, tempObjectList.ToArray());
+                destination = (Destination)ProfileRunner.Run(source.GetType(), destination.GetType(), source, destination);
             }
+            else
+            {
+                for(int i=0;i<objectInfoList.Length;i++)
+                {
+                    object valueToBeSet = objectInfoList[i].SourceObjectInfo.GetValue(source, null);
 
-            destination = (Destination)ProfileRunner.Run(source.GetType(), destination.GetType(), source, destination);
-
+                    objectInfoList[i].DestinationObjectInfo.SetValue(destination, valueToBeSet);
+                }
+               // objectInfoList. propertiesInfo[i].SetValue(destination, valueToBeSet);
+            }
             return destination;
         }
 
@@ -73,8 +97,9 @@ namespace LightMapper
             return isAnyItemIgnored;
         }
 
-        private Destination SetValue<Destination>(Destination destination, string propertyName, object valueToBeSet, Type sourceType)
+        private Destination SetValue<Destination>(Destination destination, string propertyName, object valueToBeSet, Type sourceType,out PropertyInfo destPropertyInfo)
         {
+            destPropertyInfo = null;
             Type t = destination.GetType();
 
             PropertyInfo[] propertiesInfo = t.GetProperties();
@@ -86,7 +111,15 @@ namespace LightMapper
                     Type propertyType = propertiesInfo[i].PropertyType;
 
                     if (propertyType.Name == sourceType.Name)
+                    {
                         propertiesInfo[i].SetValue(destination, valueToBeSet);
+
+                        destPropertyInfo = propertiesInfo[i];
+                    }
+                    else
+                    {
+                        destPropertyInfo = null;
+                    }
 
                     break;
                 }

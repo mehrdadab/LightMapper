@@ -6,11 +6,18 @@ namespace LightMapper
 {
     public class NameCreator
     {
-        public static string CacheKey(Type source,Type destination)
+        public static string CacheKey(Type source, Type destination)
         {
             string sourceName = source.FullName;
             string destinationName = destination.FullName;
             return $"{sourceName}-{destinationName}";
+
+        }
+        public static string CacheKey(Type source, Type destination,string propertyName)
+        {
+            string sourceName = source.FullName;
+            string destinationName = destination.FullName;
+            return $"{sourceName}-{destinationName}-{propertyName}";
 
         }
     }

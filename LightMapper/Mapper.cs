@@ -14,53 +14,52 @@ namespace LightMapper
         {
             IgnoreRunner.RunIgnore();
         }
-        public Destination Map<Source, Destination>(Source source) where Destination : class, new()
+        public Destination Map<Source, Destination>(Source source)where Source:class where Destination : class, new()
         {
-            string[] ignoreList = null;
-            bool isAnyItemIgnored = false;
-            PropertyInfo destPropertyInfo = null;
+            //string[] ignoreList = null;
+            //bool isAnyItemIgnored = false;
+            //PropertyInfo destPropertyInfo = null;
 
-            var destination = new Destination();
+            //var destination = new Destination();
 
-            Type destinationType = destination.GetType();
+            //Type destinationType = destination.GetType();
 
-            Type sourceType = source.GetType();
+            //Type sourceType = source.GetType();
 
-            var propertiesInfo = sourceType.GetProperties();
+            //var propertiesInfo = sourceType.GetProperties();
+            var dest = SetValues<Source, Destination>(source);
+            //CachedObject[] objectInfoList = ObjectCache.GetObject(sourceType, destinationType);
+            //if (objectInfoList == null)
+            //{
+            //    isAnyItemIgnored = GetIgnoreList(typeof(Source), typeof(Destination),out ignoreList);
 
-            CachedObject[] objectInfoList = ObjectCache.GetObject(sourceType, destinationType);
-            if (objectInfoList == null)
-            {
-                isAnyItemIgnored = GetIgnoreList(typeof(Source), typeof(Destination),out ignoreList);
+            //    IList<CachedObject> tempObjectList = new List<CachedObject>();
+            //    for (int i = 0; i < propertiesInfo.Length; i++)
+            //    {
+            //        bool isCurrentItemIgnored = IsItemIgnored(ignoreList, isAnyItemIgnored, propertiesInfo, i);
 
-                IList<CachedObject> tempObjectList = new List<CachedObject>();
-                for (int i = 0; i < propertiesInfo.Length; i++)
-                {
-                    bool isCurrentItemIgnored = IsItemIgnored(ignoreList, isAnyItemIgnored, propertiesInfo, i);
+            //        if (isCurrentItemIgnored == false)
+            //        {
+            //            destination = SetValue<Destination>(destination, propertiesInfo[i].Name, propertiesInfo[i].GetValue(source, null), propertiesInfo[i].PropertyType, out destPropertyInfo);
 
-                    if (isCurrentItemIgnored == false)
-                    {
-                        destination = SetValue<Destination>(destination, propertiesInfo[i].Name, propertiesInfo[i].GetValue(source, null), propertiesInfo[i].PropertyType, out destPropertyInfo);
+            //            tempObjectList.Add(new CachedObject {SourceObjectInfo=propertiesInfo[i],DestinationObjectInfo=destPropertyInfo });
 
-                        tempObjectList.Add(new CachedObject {SourceObjectInfo=propertiesInfo[i],DestinationObjectInfo=destPropertyInfo });
+            //        }
+            //    }
 
-                    }
-                }
+            //    ObjectCache.SetObject(sourceType, destinationType, tempObjectList.ToArray());
+            //    destination = (Destination)ProfileRunner.Run(source.GetType(), destination.GetType(), source, destination);
+            //}
+            //else
+            //{
+            //    for(int i=0;i<objectInfoList.Length;i++)
+            //    {
+            //        object valueToBeSet = objectInfoList[i].SourceObjectInfo.GetValue(source, null);
 
-                ObjectCache.SetObject(sourceType, destinationType, tempObjectList.ToArray());
-                destination = (Destination)ProfileRunner.Run(source.GetType(), destination.GetType(), source, destination);
-            }
-            else
-            {
-                for(int i=0;i<objectInfoList.Length;i++)
-                {
-                    object valueToBeSet = objectInfoList[i].SourceObjectInfo.GetValue(source, null);
-
-                    objectInfoList[i].DestinationObjectInfo.SetValue(destination, valueToBeSet);
-                }
-               // objectInfoList. propertiesInfo[i].SetValue(destination, valueToBeSet);
-            }
-            return destination;
+            //        objectInfoList[i].DestinationObjectInfo.SetValue(destination, valueToBeSet);
+            //    }
+            //}
+            return dest;
         }
 
         private bool IsItemIgnored(string[] ignoreList, bool isAnyItemIgnored, PropertyInfo[] propertiesInfo, int i)
@@ -83,12 +82,12 @@ namespace LightMapper
             return isCurrentItemIgnored;
         }
 
-        private bool GetIgnoreList(Type sourceType,Type destinationType,out string[] ignoreList) 
+        private bool GetIgnoreList(Type sourceType, Type destinationType, out string[] ignoreList)
         {
             ignoreList = null;
             bool isAnyItemIgnored = false;
 
-            string ignoreKey = NameCreator.CacheKey(sourceType,destinationType);
+            string ignoreKey = NameCreator.CacheKey(sourceType, destinationType);
 
             if (MapperCore.IgnoreList != null)
             {
@@ -97,7 +96,7 @@ namespace LightMapper
             return isAnyItemIgnored;
         }
 
-        private Destination SetValue<Destination>(Destination destination, string propertyName, object valueToBeSet, Type sourceType,out PropertyInfo destPropertyInfo)
+        private Destination SetValue<Destination>(Destination destination, string propertyName, object valueToBeSet, Type sourceType, out PropertyInfo destPropertyInfo)
         {
             destPropertyInfo = null;
             Type t = destination.GetType();
@@ -124,6 +123,41 @@ namespace LightMapper
                     break;
                 }
             }
+
+            return destination;
+        }
+        private Destination SetValues<Source, Destination>(Source source) where Source:class where Destination : class, new()
+        {
+            var cacheKey = "";
+            //var cacheKey = NameCreator.CacheKey(typeof(Source), typeof(Destination));
+            //IGenericGetterSetter<Source, Destination> cachedObject = null;
+            object[] cachedObject = null;
+            Destination destination =  new Destination();
+            MapperCore.MapDelegateList.TryGetValue(cacheKey, out cachedObject);
+            if (cachedObject != null)
+            {
+                for (int i = 0; i < cachedObject.Length; i++)
+                {
+                    ((IGenericGetterSetter<Source, Destination>)cachedObject[i]).Map(source, destination);
+                }
+            }
+            else
+            {
+                Type sourceType = source.GetType();
+                PropertyInfo[] properties = sourceType.GetProperties();
+                IList<dynamic> listOfDelegates = new List<dynamic>();
+                foreach (var item in properties)
+                {
+
+                    Type genericClass = typeof(GenericGetterSetter<,,>);
+                    Type constructedClass = genericClass.MakeGenericType(typeof(Source), typeof(Destination), item.PropertyType);
+                    IGenericGetterSetter<Source,Destination> created = (IGenericGetterSetter<Source, Destination>)Activator.CreateInstance(constructedClass);
+                    created.Map(source, destination, item.Name);
+                    listOfDelegates.Add(created);
+                }
+                 MapperCore.MapDelegateList.TryAdd(cacheKey, listOfDelegates.ToArray());
+            }
+
 
             return destination;
         }

@@ -29,6 +29,7 @@ namespace LightMapper
             //var propertiesInfo = sourceType.GetProperties();
             var dest = SetValues<Source, Destination>(source);
             var func = ProfileDelegateCreator.CreateDelegate<Source, Destination>();
+            if(func!=null)
             dest = func(source, dest);
             //CachedObject[] objectInfoList = ObjectCache.GetObject(sourceType, destinationType);
             //if (objectInfoList == null)
@@ -147,7 +148,7 @@ namespace LightMapper
             {
                 Type sourceType = source.GetType();
                 PropertyInfo[] properties = sourceType.GetProperties();
-                IList<dynamic> listOfDelegates = new List<dynamic>();
+                IList<object> listOfDelegates = new List<object>();
                 foreach (var item in properties)
                 {
 
@@ -155,6 +156,8 @@ namespace LightMapper
                     Type constructedClass = genericClass.MakeGenericType(typeof(Source), typeof(Destination), item.PropertyType);
                     IMappingRepository<Source,Destination> created = (IMappingRepository<Source, Destination>)Activator.CreateInstance(constructedClass);
                     created.Map(source, destination, item.Name);
+                    //var test = new MappingRepository<Source, Destination, object>();
+                    //test.Map(source, destination,item.Name);
                     listOfDelegates.Add(created);
                 }
                  MapperCore.MapDelegateList.TryAdd(cacheKey, listOfDelegates.ToArray());

@@ -20,11 +20,18 @@ namespace LightMapper
                 .Where(p => type.IsAssignableFrom(p) && !type.IsAbstract);
             if (types.Count() > 1)
                 throw new Exception("Two functions with the same name is not allowed inside the LightMapper profile classes.");
-            Type functionClassType = types.First().GetType();
-            MethodInfo methodInfo = functionClassType.GetMethod(functionClassType.Name);
-            Func<Source, Destination, Destination> createdDelegate = (Func<Source, Destination, Destination>)Delegate.CreateDelegate(functionClassType, methodInfo);
+            if (types.Any())
+            {
+                Type functionClassType = types.First().GetType();
+                MethodInfo methodInfo = functionClassType.GetMethod(functionClassType.Name);
+                Func<Source, Destination, Destination> createdDelegate = (Func<Source, Destination, Destination>)Delegate.CreateDelegate(functionClassType, methodInfo);
 
-            return createdDelegate;
+                return createdDelegate;
+            }
+            else
+            {
+                return null;
+            }
 
         }
     }

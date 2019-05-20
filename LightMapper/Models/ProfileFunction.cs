@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LightMapper.Models
 {
-    public class ProfileFunctionCachedItem
+    public class ProfileFunction
     {
         public Type Source { get; set; }
         public Type Destination { get; set; }

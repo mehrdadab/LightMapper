@@ -13,7 +13,7 @@ namespace LightMapper
         {
             object returnedResult = null;
             int numberOfMethodsFound = 0;
-            ProfileFunctionCachedItem cachedItem = null;
+            ProfileFunction cachedItem = null;
             cachedItem = ProfileFunctionCache.GetFunction(sourceType, destType);
 
             if (cachedItem != null && cachedItem.MethodInfo == null)
@@ -30,7 +30,7 @@ namespace LightMapper
             }
             else
             {
-                cachedItem = new ProfileFunctionCachedItem();
+                cachedItem = new ProfileFunction();
                 cachedItem.Source = sourceType;
                 cachedItem.Destination = destType;
             }

@@ -15,6 +15,7 @@ namespace LightMapper
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p => type.IsAssignableFrom(p));
+
             foreach (var item in types)
             {
                 MethodInfo methodInfo = item.GetMethod("RegisterIgnore");

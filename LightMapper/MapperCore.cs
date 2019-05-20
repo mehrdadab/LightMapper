@@ -10,7 +10,7 @@ namespace LightMapper
     {
         public static ConcurrentDictionary<string, string[]> IgnoreList { get; set; }
         public static ConcurrentDictionary<string, object> ProfileFunctionList { get; set; } = new ConcurrentDictionary<string, object>();
-        public static ConcurrentDictionary<string, CachedObject[]> CachedObjectList { get; set; }
+        //public static ConcurrentDictionary<string, CachedObject[]> CachedObjectList { get; set; }
         public static ConcurrentDictionary<string, Mapping> MapDelegateList { get; set; } = new ConcurrentDictionary<string, Mapping>();
     }
 }

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LightMapper
 {
-    public class ProfileDelegateCreator
+    public class ProfileDelegateProvider
     {
         public static Func<Source, Destination, Destination> CreateDelegate<Source, Destination>()
             where Source : class
@@ -45,6 +45,7 @@ namespace LightMapper
                 {
                     throw new Exception("Two functions with the same name is not allowed inside the LightMapper profile classes.");
                 }
+
                 Func<Source, Destination, Destination> createdDelegate = (Func<Source, Destination, Destination>)Delegate.CreateDelegate(typeof(Func<Source,Destination,Destination>),null, methodInfo);
 
                 return createdDelegate;

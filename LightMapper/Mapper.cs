@@ -18,7 +18,7 @@ namespace LightMapper
         {
              var dest = SetValues<Source, Destination>(source);
 
-            var func = ProfileDelegateCreator.CreateDelegate<Source, Destination>();
+            var func = ProfileDelegateProvider.CreateDelegate<Source, Destination>();
 
             if (func!=null)
             dest = func(source, dest);

@@ -17,14 +17,35 @@ namespace LightMapper
 
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p) && !type.IsAbstract);
+                .Where(p => type.IsAssignableFrom(p) && p.IsClass);
+
             if (types.Count() > 1)
                 throw new Exception("Two functions with the same name is not allowed inside the LightMapper profile classes.");
+
             if (types.Any())
             {
-                Type functionClassType = types.First().GetType();
-                MethodInfo methodInfo = functionClassType.GetMethod(functionClassType.Name);
-                Func<Source, Destination, Destination> createdDelegate = (Func<Source, Destination, Destination>)Delegate.CreateDelegate(functionClassType, methodInfo);
+                Type functionClassType = types.First();
+                MethodInfo methodInfo = null;
+                try
+                {
+                    Type sourceType = typeof(Source);
+                    Type destType = typeof(Destination);
+
+                    MethodInfo[] methodInfoList = functionClassType.GetMethods();
+
+                    methodInfo = methodInfoList.SingleOrDefault(d =>
+                   d.GetParameters().Count() == 2 &&
+                   d.GetParameters()[0].ParameterType == sourceType &&
+                   d.GetParameters()[1].ParameterType == destType);
+
+                    if (methodInfo == null)
+                        return null;
+                }
+                catch
+                {
+                    throw new Exception("Two functions with the same name is not allowed inside the LightMapper profile classes.");
+                }
+                Func<Source, Destination, Destination> createdDelegate = (Func<Source, Destination, Destination>)Delegate.CreateDelegate(typeof(Func<Source,Destination,Destination>),null, methodInfo);
 
                 return createdDelegate;
             }

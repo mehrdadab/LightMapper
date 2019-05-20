@@ -14,14 +14,14 @@ namespace LightMapper
         {
             IgnoreRunner.RunIgnore();
         }
-        public Destination Map<Source, Destination>(Source source)where Source:class where Destination : class, new()
+        public Destination Map<Source, Destination>(Source source) where Source : class where Destination : class, new()
         {
-             var dest = SetValues<Source, Destination>(source);
+            var dest = SetValues<Source, Destination>(source);
 
             var func = ProfileDelegateProvider.CreateDelegate<Source, Destination>();
 
-            if (func!=null)
-            dest = func(source, dest);
+            if (func != null && func.Function != null)
+                dest = func.Function(source, dest);
 
             return dest;
         }
@@ -60,14 +60,14 @@ namespace LightMapper
             return isAnyItemIgnored;
         }
 
-     
-        private Destination SetValues<Source, Destination>(Source source) where Source:class where Destination : class, new()
+
+        private Destination SetValues<Source, Destination>(Source source) where Source : class where Destination : class, new()
         {
             var cacheKey = "";
 
             object[] cachedObject = null;
 
-            Destination destination =  new Destination();
+            Destination destination = new Destination();
 
             MapperCore.MapDelegateList.TryGetValue(cacheKey, out cachedObject);
 
@@ -93,7 +93,7 @@ namespace LightMapper
 
                     Type constructedClass = genericClass.MakeGenericType(typeof(Source), typeof(Destination), item.PropertyType);
 
-                    IMappingRepository<Source,Destination> created = (IMappingRepository<Source, Destination>)Activator.CreateInstance(constructedClass);
+                    IMappingRepository<Source, Destination> created = (IMappingRepository<Source, Destination>)Activator.CreateInstance(constructedClass);
 
                     created.Map(source, destination, item.Name);
 

@@ -5,11 +5,10 @@ using System.Text;
 
 namespace LightMapper.Models
 {
-    public class ProfileFunction
+    public class ProfileFunction<Source,Destination> 
+        where Source:class
+        where Destination:class
     {
-        public Type Source { get; set; }
-        public Type Destination { get; set; }
-        public Type ClassType { get; set; }
-        public MethodInfo MethodInfo { get; set; }
+        public Func<Source,Destination,Destination> Function { get; set; }
     }
 }

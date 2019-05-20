@@ -11,7 +11,7 @@ namespace LightMapper
         private Action<Destination, Value> setter = null;
         public void Map(Source source, Destination destination, string propertyName = null)
         {
-             if (getter == null)//Value is the source type
+             if (getter == null && propertyName!=null)//Value is the source type
             {
                 var sourceType = typeof(Source).GetProperty(propertyName).PropertyType;
                 var destinationType = typeof(Destination).GetProperty(propertyName).PropertyType;

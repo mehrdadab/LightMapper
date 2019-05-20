@@ -16,38 +16,45 @@ namespace LightMapper
         }
         public Destination Map<Source, Destination>(Source source) where Source : class where Destination : class, new()
         {
-            var dest = SetValues<Source, Destination>(source);
+            Mapping mapping = null;
+            var dest = SetValues<Source, Destination>(source, out mapping);
 
-            var func = ProfileDelegateProvider.CreateDelegate<Source, Destination>();
-
-            if (func != null && func.Function != null)
+            var func = (ProfileFunction<Source, Destination>)mapping?.FunctonAfterMapping;
+            if (func != null && func.Function!=null)
                 dest = func.Function(source, dest);
+            //var func = ProfileDelegateProvider.CreateDelegate<Source, Destination>();
+
+            //if (func != null && func.Function != null)
+            //    dest = func.Function(source, dest);
 
             return dest;
         }
 
-        private Destination SetValues<Source, Destination>(Source source) where Source : class where Destination : class, new()
+        private Destination SetValues<Source, Destination>(Source source, out Mapping mapping) where Source : class where Destination : class, new()
         {
             var cacheKey = "";
-
-            object[] cachedObject = null;
+            mapping = null;
+            Mapping cachedObject = null;
 
             Destination destination = new Destination();
-
+            cacheKey = NameCreator.CacheKey(typeof(Source), typeof(Destination));
             MapperCore.MapDelegateList.TryGetValue(cacheKey, out cachedObject);
 
             if (cachedObject != null)
             {
-                for (int i = 0; i < cachedObject.Length; i++)
+                mapping = cachedObject;
+
+                for (int i = 0; i < cachedObject.MappingRepositories.Length; i++)
                 {
-                    ((IMappingRepository<Source, Destination>)cachedObject[i]).Map(source, destination);
+                    ((IMappingRepository<Source, Destination>)cachedObject.MappingRepositories[i]).Map(source, destination);
                 }
             }
             else
             {
                 IList<object> listOfDelegates = CreateMappingRepository(source, destination);
-
-                MapperCore.MapDelegateList.TryAdd(cacheKey, listOfDelegates.ToArray());
+                var func = ProfileDelegateProvider.CreateDelegate<Source, Destination>();
+                mapping = new Mapping { MappingRepositories = listOfDelegates.ToArray(), FunctonAfterMapping = func };
+                MapperCore.MapDelegateList.TryAdd(cacheKey,mapping );
             }
 
 
@@ -63,10 +70,18 @@ namespace LightMapper
             PropertyInfo[] properties = sourceType.GetProperties();
 
             IList<object> listOfDelegates = new List<object>();
+            string[] ignoreList;
+
+            bool isAnyItemIgnoredAtAll = IgnoreProvider.GetIgnoreList(typeof(Source), typeof(Destination), out ignoreList);
 
             foreach (var item in properties)
             {
-
+                if (isAnyItemIgnoredAtAll)
+                {
+                    var ignored = ignoreList.Where(d => d == item.Name);
+                    if (ignored.Any())
+                        continue;
+                }
                 Type genericClass = typeof(MappingRepository<,,>);
 
                 Type constructedClass = genericClass.MakeGenericType(typeof(Source), typeof(Destination), item.PropertyType);

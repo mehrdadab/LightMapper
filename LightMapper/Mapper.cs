@@ -20,13 +20,10 @@ namespace LightMapper
             var dest = SetValues<Source, Destination>(source, out mapping);
 
             var func = (ProfileFunction<Source, Destination>)mapping?.FunctonAfterMapping;
+
             if (func != null && func.Function!=null)
                 dest = func.Function(source, dest);
-            //var func = ProfileDelegateProvider.CreateDelegate<Source, Destination>();
-
-            //if (func != null && func.Function != null)
-            //    dest = func.Function(source, dest);
-
+      
             return dest;
         }
 
@@ -37,7 +34,9 @@ namespace LightMapper
             Mapping cachedObject = null;
 
             Destination destination = new Destination();
+
             cacheKey = NameCreator.CacheKey(typeof(Source), typeof(Destination));
+
             MapperCore.MapDelegateList.TryGetValue(cacheKey, out cachedObject);
 
             if (cachedObject != null)
@@ -52,8 +51,11 @@ namespace LightMapper
             else
             {
                 IList<object> listOfDelegates = CreateMappingRepository(source, destination);
+
                 var func = ProfileDelegateProvider.CreateDelegate<Source, Destination>();
+
                 mapping = new Mapping { MappingRepositories = listOfDelegates.ToArray(), FunctonAfterMapping = func };
+
                 MapperCore.MapDelegateList.TryAdd(cacheKey,mapping );
             }
 
@@ -70,6 +72,7 @@ namespace LightMapper
             PropertyInfo[] properties = sourceType.GetProperties();
 
             IList<object> listOfDelegates = new List<object>();
+
             string[] ignoreList;
 
             bool isAnyItemIgnoredAtAll = IgnoreProvider.GetIgnoreList(typeof(Source), typeof(Destination), out ignoreList);
@@ -79,6 +82,7 @@ namespace LightMapper
                 if (isAnyItemIgnoredAtAll)
                 {
                     var ignored = ignoreList.Where(d => d == item.Name);
+
                     if (ignored.Any())
                         continue;
                 }

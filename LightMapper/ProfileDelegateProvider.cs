@@ -9,6 +9,12 @@ namespace LightMapper
 {
     public class ProfileDelegateProvider
     {
+        /// <summary>
+        /// Create a delegate for a profile function(a function created to customise a mapping) 
+        /// </summary>
+        /// <typeparam name="Source">Source type</typeparam>
+        /// <typeparam name="Destination">Destination type</typeparam>
+        /// <returns></returns>
         public static ProfileFunction<Source, Destination> CreateDelegate<Source, Destination>()
             where Source : class
             where Destination : class

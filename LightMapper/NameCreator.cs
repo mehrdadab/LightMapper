@@ -4,6 +4,9 @@ using System.Text;
 
 namespace LightMapper
 {
+    /// <summary>
+    /// this class has been developed to create a key when caching delegates
+    /// </summary>
     public class NameCreator
     {
         public static string CacheKey(Type source, Type destination)

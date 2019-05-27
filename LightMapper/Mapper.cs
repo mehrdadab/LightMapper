@@ -16,7 +16,7 @@ namespace LightMapper
         }
         public Destination Map<Source, Destination>(Source source) where Source : class where Destination : class, new()
         {
-            Mapping mapping = null;
+            MappingUnit mapping = null;
             var dest = SetValues<Source, Destination>(source, out mapping);
 
             var func = (ProfileFunction<Source, Destination>)mapping?.FunctonAfterMapping;
@@ -27,11 +27,11 @@ namespace LightMapper
             return dest;
         }
 
-        private Destination SetValues<Source, Destination>(Source source, out Mapping mapping) where Source : class where Destination : class, new()
+        private Destination SetValues<Source, Destination>(Source source, out MappingUnit mapping) where Source : class where Destination : class, new()
         {
             var cacheKey = "";
             mapping = null;
-            Mapping cachedObject = null;
+            MappingUnit cachedObject = null;
 
             Destination destination = new Destination();
 
@@ -54,7 +54,7 @@ namespace LightMapper
 
                 var func = ProfileDelegateProvider.CreateDelegate<Source, Destination>();
 
-                mapping = new Mapping { MappingRepositories = listOfDelegates.ToArray(), FunctonAfterMapping = func };
+                mapping = new MappingUnit { MappingRepositories = listOfDelegates.ToArray(), FunctonAfterMapping = func };
 
                 MapperCore.MapDelegateList.TryAdd(cacheKey,mapping );
             }

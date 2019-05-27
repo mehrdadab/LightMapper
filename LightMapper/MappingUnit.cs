@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LightMapper
 {
-    public class Mapping
+    public class MappingUnit
     {
         public object[] MappingRepositories { get; set; }
         public object FunctonAfterMapping { get; set; }

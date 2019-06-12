@@ -68,6 +68,7 @@ namespace LightMapper
             where Destination : class, new()
         {
             Type sourceType = source.GetType();
+            Type destinationType = destination.GetType();
 
             PropertyInfo[] properties = sourceType.GetProperties();
 
@@ -86,18 +87,55 @@ namespace LightMapper
                     if (ignored.Any())
                         continue;
                 }
-                Type genericClass = typeof(MappingRepository<,,>);
+                else if (item.PropertyType.IsClass && !item.PropertyType.FullName.StartsWith("System."))
+                {
+                    object result = CreateMappingRepositoryByReflection(source, destination, destinationType, item);
 
-                Type constructedClass = genericClass.MakeGenericType(typeof(Source), typeof(Destination), item.PropertyType);
+                    listOfDelegates = listOfDelegates.Concat((result as IList<object>)).ToList();
 
-                IMappingRepository<Source, Destination> created = (IMappingRepository<Source, Destination>)Activator.CreateInstance(constructedClass);
+                }
+                else
+                {
+                    Type genericClass = typeof(MappingRepository<,,>);
 
-                created.Map(source, destination, item.Name);
+                    Type constructedClass = genericClass.MakeGenericType(typeof(Source), typeof(Destination), item.PropertyType);
 
-                listOfDelegates.Add(created);
+                    IMappingRepository<Source, Destination> created = (IMappingRepository<Source, Destination>)Activator.CreateInstance(constructedClass);
+
+                    created.Map(source, destination, item.Name);
+
+                    listOfDelegates.Add(created);
+                }
             }
 
             return listOfDelegates;
+        }
+
+        private static object CreateMappingRepositoryByReflection<Source, Destination>(Source source, Destination destination, Type destinationType, PropertyInfo item)
+            where Source : class
+            where Destination : class, new()
+        {
+            PropertyInfo[] destProperties = destinationType.GetProperties();
+
+            var destItem = destProperties.First(d => d.Name == item.Name);
+
+            //if (destItem == null)
+            //   return;
+
+            MethodInfo method = typeof(Mapper).GetMethod("CreateMappingRepository", BindingFlags.NonPublic | BindingFlags.Static);
+
+            MethodInfo generic = method.MakeGenericMethod(item.PropertyType, destItem.PropertyType);
+
+            var itemObject = item.GetValue(source);
+
+            var destItemObject = Activator.CreateInstance(destItem.PropertyType);
+
+            destItem.SetValue(destination, destItemObject);
+
+            object[] parameters = new object[] { itemObject, destItemObject };
+
+            var result = generic.Invoke(null, parameters);
+            return result;
         }
     }
 }

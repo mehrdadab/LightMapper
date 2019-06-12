@@ -13,8 +13,11 @@ namespace LightMapper
         {
              if (getter == null && propertyName!=null)//Value is the source type
             {
+                //var sourcePropertyInfo = typeof(Source).GetProperty(propertyName);
+                //if(sourcePropertyInfo.IsDefined)
                 var sourceType = typeof(Source).GetProperty(propertyName).PropertyType;
                 var destinationType = typeof(Destination).GetProperty(propertyName).PropertyType;
+
                 if (sourceType == destinationType)
                 {
                     MethodInfo methodInfoGet = typeof(Source).GetProperty(propertyName).GetGetMethod();

@@ -55,13 +55,13 @@ namespace LightMapper
 
                 if (propertyInfo.PropertyType.IsClass && !propertyInfo.PropertyType.FullName.StartsWith("System."))
                 {
-                   var tt = propertiesDestination.First(d => d.Name == propertyInfo.Name);
+                   var destPropertyInfo = propertiesDestination.First(d => d.Name == propertyInfo.Name);
 
                     var sourceVal = propertyInfo.GetValue(source);
 
-                    var dest = ReflectionProvider.MapByReflection(this, sourceVal, tt.PropertyType, propertyInfo.Name);
+                    var dest = ReflectionProvider.MapByReflection(this, sourceVal, destPropertyInfo.PropertyType, propertyInfo.Name);
 
-                    tt.SetValue(destination, dest);
+                    destPropertyInfo.SetValue(destination, dest);
                 }
                 else
                 {

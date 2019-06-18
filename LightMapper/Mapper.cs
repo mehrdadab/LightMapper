@@ -16,9 +16,8 @@ namespace LightMapper
         }
         public Destination Map<Source, Destination>(Source source) where Source : class where Destination : class, new()
         {
-            MappingUnit mapping = null;
 
-            var dest = SetValues<Source, Destination>(source, out mapping);
+            var dest = SetValues<Source, Destination>(source);
 
             //var func = (ProfileFunction<Source, Destination>)mapping?.FunctonAfterMapping;
 
@@ -28,9 +27,8 @@ namespace LightMapper
             return dest;
         }
 
-        private Destination SetValues<Source, Destination>(Source source, out MappingUnit mapping) where Source : class where Destination : class, new()
+        private Destination SetValues<Source, Destination>(Source source) where Source : class where Destination : class, new()
         {
-            mapping = null;
             string[] ignoreList;
 
             bool isAnyItemIgnoredAtAll = IgnoreProvider.GetIgnoreList(typeof(Source), typeof(Destination), out ignoreList);

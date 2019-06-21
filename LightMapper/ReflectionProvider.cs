@@ -39,16 +39,31 @@ namespace LightMapper
                 }
             }
         }
-        public static object MapByReflection(Mapper mapper,object source, Type destinationType, string propertyName)
+        public static object MapByReflection(Mapper mapper, object source, Type destinationType, string propertyName)
         {
+            Type sourceType = source.GetType();
+            var cacheKey = NameCreator.CacheKey(sourceType, destinationType, propertyName);
+            MethodInfo generic = null;
+            MapperCore.MapByReflectionList.TryGetValue(cacheKey, out generic);
+            if (generic != null)
+            {
+                var dest = generic.Invoke(mapper, new object[] { source });
+
+                return dest;
+            }
+            else
+            {
                 MethodInfo method = typeof(Mapper).GetMethod("Map");
 
-            Type sourceType = source.GetType();
-            //Type destinationType = destination.GetType();
-            MethodInfo generic = method.MakeGenericMethod(sourceType, destinationType);
-            //var destItemObject = Activator.CreateInstance(destinationType);
-           var dest = generic.Invoke(mapper,new object[] {source });
-            return dest;
+                generic = method.MakeGenericMethod(sourceType, destinationType);
+
+                var dest = generic.Invoke(mapper, new object[] { source });
+
+                MapperCore.MapByReflectionList.TryAdd(cacheKey, generic);
+
+                return dest;
+
+            }
             //    var itemObject = item.GetValue(source);
 
             //    var destItemObject = Activator.CreateInstance(destItem.PropertyType);

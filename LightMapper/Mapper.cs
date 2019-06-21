@@ -23,7 +23,7 @@ namespace LightMapper
 
             //if (func != null && func.Function!=null)
             //    dest = func.Function(source, dest);
-      
+
             return dest;
         }
 
@@ -32,16 +32,33 @@ namespace LightMapper
             string[] ignoreList;
 
             bool isAnyItemIgnoredAtAll = IgnoreProvider.GetIgnoreList(typeof(Source), typeof(Destination), out ignoreList);
-
+           var key = NameCreator.CacheKey(typeof(Source), typeof(Destination));
+            MapInfo mapInfo = null;
+            MapperCore.MapInfoList.TryGetValue(key,out mapInfo);
             Destination destination = new Destination();
+            Type sourceType = null;
 
-            Type sourceType = typeof(Source);
+            Type destinationType = null;
 
-            Type destinationType = typeof(Destination);
+            PropertyInfo[] propertiesSource = null;
+            PropertyInfo[] propertiesDestination = null;
 
-            PropertyInfo[] propertiesSource = sourceType.GetProperties();
+            if (mapInfo==null)
+            {
+                sourceType = typeof(Source);
+                destinationType = typeof(Destination);
+                propertiesSource = sourceType.GetProperties();
+                propertiesDestination = destinationType.GetProperties();
+                MapperCore.MapInfoList.TryAdd(key,new MapInfo {SourceType=sourceType,DestinationType=destinationType,SourcePropertyInfo=propertiesSource,DestinationPropertyInfo=propertiesDestination });
+            }
+            else
+            {
+                sourceType = mapInfo.SourceType;
+                destinationType = mapInfo.DestinationType;
+                propertiesSource = mapInfo.SourcePropertyInfo;
+                propertiesDestination = mapInfo.DestinationPropertyInfo;
 
-            PropertyInfo[] propertiesDestination = destinationType.GetProperties();
+            }
 
             foreach (var propertyInfo in propertiesSource)
             {
@@ -55,7 +72,8 @@ namespace LightMapper
 
                 if (propertyInfo.PropertyType.IsClass && !propertyInfo.PropertyType.FullName.StartsWith("System."))
                 {
-                   var destPropertyInfo = propertiesDestination.First(d => d.Name == propertyInfo.Name);
+
+                    var destPropertyInfo = propertiesDestination.First(d => d.Name == propertyInfo.Name);
 
                     var sourceVal = propertyInfo.GetValue(source);
 
@@ -68,10 +86,10 @@ namespace LightMapper
                     ReflectionProvider.MapValue(source, destination, propertyInfo.Name);
                 }
             }
-  
+
             return destination;
         }
 
- 
+
     }
 }

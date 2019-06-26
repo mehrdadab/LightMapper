@@ -21,5 +21,18 @@ namespace LightMapperTest
             Assert.True(mapresult);
 
         }
+        [Fact]
+        public void Mapping_RecursiveObjectMap()
+        {
+            StudentViewModel result3 = new StudentViewModel();
+            var student = new Student { Name = "Mike", Age = 18, Score = 19.2M, Teacher = "Jim", ArrayTest = new string[3] { "a", "b", "c" }, StudentTask = new StudentTask() { TaskName = "My Test", Duration = 10.0M } };
+
+             var mapper = new LightMapper.Mapper();
+            var result = mapper.Map<Student, StudentViewModel>(student);
+            bool mapresult = result.Name == "Mike" && result.Age == 18 && result.Score==19.2M 
+                && result.Teacher=="Jim" && result.StudentTask.TaskName== "My Test" && result.StudentTask.Duration==10.0M;
+            Assert.True(mapresult);
+
+        }
     }
 }

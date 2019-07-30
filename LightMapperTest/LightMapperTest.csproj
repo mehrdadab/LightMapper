@@ -13,13 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="LightMapper">
-      <HintPath>..\LightMapper\bin\Debug\netcoreapp2.2\LightMapper.dll</HintPath>
-    </Reference>
+    <Folder Include="Models\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
+    <Reference Include="LightMapper">
+      <HintPath>..\LightMapper\bin\Debug\netcoreapp2.2\LightMapper.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

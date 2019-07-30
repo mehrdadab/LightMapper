@@ -19,10 +19,13 @@ namespace LightMapper
 
             var dest = SetValues<Source, Destination>(source);
 
+         var func =   ProfileDelegateProvider.CreateDelegate<Source, Destination>();
+
+
             //var func = (ProfileFunction<Source, Destination>)mapping?.FunctonAfterMapping;
 
-            //if (func != null && func.Function!=null)
-            //    dest = func.Function(source, dest);
+            if (func != null && func.Function!=null)
+                dest = func.Function(source, dest);
 
             return dest;
         }
@@ -32,9 +35,9 @@ namespace LightMapper
             string[] ignoreList;
 
             bool isAnyItemIgnoredAtAll = IgnoreProvider.GetIgnoreList(typeof(Source), typeof(Destination), out ignoreList);
-           var key = NameCreator.CacheKey(typeof(Source), typeof(Destination));
+            var key = NameCreator.CacheKey(typeof(Source), typeof(Destination));
             MapInfo mapInfo = null;
-            MapperCore.MapInfoList.TryGetValue(key,out mapInfo);
+            MapperCore.MapInfoList.TryGetValue(key, out mapInfo);
             Destination destination = new Destination();
             Type sourceType = null;
 
@@ -43,13 +46,17 @@ namespace LightMapper
             PropertyInfo[] propertiesSource = null;
             PropertyInfo[] propertiesDestination = null;
 
-            if (mapInfo==null)
+            if (mapInfo == null)
             {
                 sourceType = typeof(Source);
                 destinationType = typeof(Destination);
                 propertiesSource = sourceType.GetProperties();
                 propertiesDestination = destinationType.GetProperties();
-                MapperCore.MapInfoList.TryAdd(key,new MapInfo {SourceType=sourceType,DestinationType=destinationType,SourcePropertyInfo=propertiesSource,DestinationPropertyInfo=propertiesDestination });
+                MapperCore.MapInfoList.TryAdd(key, new MapInfo {
+                    SourceType = sourceType,
+                    DestinationType = destinationType,
+                    SourcePropertyInfo = propertiesSource,
+                    DestinationPropertyInfo = propertiesDestination });
             }
             else
             {
